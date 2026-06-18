@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío de Ciencias Jurídicas y Políticas</title>
+    <style>
+        :root {
+            --bg-main: #121214;
+            --bg-container: #1e1e24;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --accent: #f59e0b;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            background: var(--bg-main); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        .container { 
+            max-width: 750px; 
+            width: 100%; 
+            margin: auto; 
+            background: var(--bg-container); 
+            padding: 35px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid var(--border);
+        }
+        h2 { color: var(--primary); text-align: center; margin-top: 0; font-size: 28px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 14px; 
+            background: #2d2d35;
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 16px; 
+            color: var(--text-main);
+        }
+        input[type="text"]:focus { border-color: var(--primary); outline: none; }
+        .btn { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 14px 30px; 
+            font-size: 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: all 0.2s; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #4b5563; }
+        .btn-secondary:hover { background: #374151; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 35px; }
+        
+        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--secondary); width: 0%; transition: width 0.3s; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+        .option-card { 
+            padding: 16px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            background: #25252d; 
+            color: var(--text-main);
+        }
+        .option-card:hover { border-color: var(--primary); background: #2d2d39; }
+        .option-card.selected { border-color: var(--primary); background: #313145; border-left: 6px solid var(--primary); }
+        
+        .icon-header { font-size: 50px; text-align: center; margin-bottom: 15px; }
+        
+        /* Estilos Tablas / Cuadros */
+        .grid-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #25252d; }
+        .grid-table th, .grid-table td { border: 1px solid var(--border); padding: 14px; text-align: left; }
+        .grid-table th { background: #1c1c22; color: var(--primary); }
+        select { 
+            padding: 10px; 
+            border-radius: 6px; 
+            width: 100%; 
+            font-size: 14px; 
+            background: #2d2d35; 
+            color: var(--text-main); 
+            border: 1px solid var(--border);
+        }
+
+        /* Estilos Relacionar / Unir */
+        .matching-container { display: flex; justify-content: space-between; gap: 20px; margin-top: 20px; }
+        .matching-column { display: flex; flex-direction: column; gap: 12px; width: 48%; }
+        .match-item { 
+            padding: 14px; 
+            border: 2px solid var(--border); 
+            background: #25252d; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            min-height: 60px; 
+            display: flex; 
+            align-items: center; 
+            color: var(--text-main);
+        }
+        .match-item.selected { background: #413624; border-color: var(--accent); }
+        .match-item.linked { background: #1b362c; border-color: var(--secondary); cursor: not-allowed; opacity: 0.8; }
+        
+        footer { text-align: center; margin-top: auto; padding-top: 40px; font-size: 14px; color: var(--text-muted); font-weight: 500; }
+        .alert { color: #f87171; font-weight: bold; margin-top: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Pantalla de Bienvenida / Registro -->
+        <div id="screen-login" class="screen active">
+            <div class="icon-header">🏛️⚖️🛡️</div>
+            <h2>Desafío de Ciencias Jurídicas y Políticas</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Ingresá tus datos para iniciar el recorrido de desafíos.</p>
+            
+            <div class="form-group">
+                <label for="user-name">Nombre y Apellido:</label>
+                <input type="text" id="user-name" placeholder="Ej: Valentina Gómez">
+            </div>
+            <div class="form-group">
+                <label for="game-code">Código del Jugador:</label>
+                <input type="text" id="game-code" placeholder="Tu código asignado">
+            </div>
+            
+            <div id="login-error" class="alert" style="display:none;"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="startGame()">Comenzar Desafío 🚀</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego / Preguntas -->
+        <div id="screen-game" class="screen">
+            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            <div id="question-container"></div>
+            <div class="nav-buttons">
+                <button id="btn-back" class="btn btn-secondary" onclick="navigateQuestion(-1)">⬅️ Volver</button>
+                <button id="btn-next" class="btn" onclick="navigateQuestion(1)">Avanzar ➡️</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Bloqueo Final -->
+        <div id="screen-end" class="screen" style="text-align: center;">
+            <div class="icon-header">🏆</div>
+            <h2>¡Misión Completada!</h2>
+            <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 35px;">Tus respuestas han quedado debidamente registradas y enviadas de forma directa en el sistema del aula.</p>
+            <button class="btn" onclick="exitGame()">Salir del Juego 🚪</button>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 - Prof. Mariela L. Loza. Todos los derechos reservados.
+Versión 1.0
+    </footer>
+
+    <script>
+        // URL DE TU FORMSPREE
+        const FORMSPREE_URL = "https://formspree.io/f/xgobvajd"; 
+        
+        // CÓDIGOS DE ACCESO (12 Alumnos y 1 Profesor) - No distingue mayúsculas/minúsculas
+        const STUDENT_CODES = ["ALU01", "ALU02", "ALU03", "ALU04", "ALU05", "ALU06", "ALU07", "ALU08", "ALU09", "ALU10", "ALU11", "ALU12"];
+        const TEACHER_CODE = "DOCENTE2026";
+
+        // 15 Preguntas alternadas (5 de Estado, 5 de Nación, 5 de Gobierno)
+        const quizData = [
+            // 1. Estado - Opción Múltiple
+            {
+                id: 1, type: "choice", topic: "Estado", icon: "🏛️",
+                q: "Respecto a la organización jurídica y política de una sociedad, ¿cuál describe mejor el concepto de Estado?",
+                options: [
+                    "La estructura institucional de dominación jurídica y política que ejerce soberanía sobre una población en un territorio delimitado.",
+                    "El conjunto de tradiciones y lazos de sangre que unen a una población en un territorio compartido.",
+                    "El grupo de personas elegidas de manera temporal para administrar las instituciones de un país.",
+                    "Un acuerdo comercial entre diferentes provincias para facilitar el libre tránsito."
+                ],
+                correct: 0
+            },
+            // 2. Nación - Completar Cuadro
+            {
+                id: 2, type: "grid", topic: "Nación", icon: "👥",
+                q: "Completá el cuadro conceptual sobre las identidades colectivas eligiendo la opción correcta:",
+                headers: ["Concepto Histórico-Cultural", "Definición Básica"],
+                rows: [
+                    { label: "Nación", options: ["Seleccionar...", "Comunidad vinculada por idioma, cultura, tradiciones y sentido de pertenencia.", "Infraestructura burocrática orientada al cobro de aranceles."], correct: "Comunidad vinculada por idioma, cultura, tradiciones y sentido de pertenencia." }
+                ]
+            },
+            // 3. Gobierno - Unir Columnas
+            {
+                id: 3, type: "match", topic: "Gobierno", icon: "📜",
+                q: "Uní los conceptos clásicos de Aristóteles relacionando el término con su definición:",
+                left: ["Formas Puras", "Formas Impuras"],
+                right: ["Buscan el interés particular (Tiranía, Oligarquía, Demagogia).", "Buscan el bien común de la sociedad (Monarquía, Aristocracia, República)."],
+                pairs: { "Formas Puras": "Buscan el bien común de la sociedad (Monarquía, Aristocracia, República).", "Formas Impuras": "Buscan el interés particular (Tiranía, Oligarquía, Demagogia)." }
+            },
+            // 4. Estado - Opción Múltiple
+            {
+                id: 4, type: "choice", topic: "Estado", icon: "🛡️",
+                q: "¿Cuáles son considerados los objetivos y funciones fundamentales de las estructuras del Estado?",
+                options: [
+                    "Garantizar el bienestar general, la seguridad exterior, la justicia y el orden interno mediante regulaciones.",
+                    "Administrar exclusivamente empresas privadas y asegurar ganancias de sectores comerciales determinados.",
+                    "Reemplazar por completo las responsabilidades y dinámicas propias de los núcleos familiares.",
+                    "Disolver fronteras territoriales y centralizar economías regionales en un único mercado global."
+                ],
+                correct: 0
+            },
+            // 5. Nación - Completar Cuadro
+            {
+                id: 5, type: "grid", topic: "Nación", icon: "🚩",
+                q: "Completá la celda vacía correspondiente al análisis de las corrientes ideológicas:",
+                headers: ["Fenómeno", "Alcance Teórico"],
+                rows: [
+                    { label: "Nacionalismo", options: ["Seleccionar...", "Corriente político-cultural que exalta la identidad e intereses de una nación.", "Acuerdo globalizador para la disolución de simbologías locales."], correct: "Corriente político-cultural que exalta la identidad e intereses de una nación." }
+                ]
+            },
+            // 6. Gobierno - Unir Columnas
+            {
+                id: 6, type: "match", topic: "Gobierno", icon: "⚖️",
+                q: "Uní los componentes clave de la República según el esquema analítico clásico aristotélico:",
+                left: ["Imperio de la Ley", "Clase Media"],
+                right: ["Funciona como el factor equilibrante de la estabilidad social.", "Pilar institucional que garantiza que nadie esté por encima de la normativa."],
+                pairs: { "Imperio de la Ley": "Pilar institucional que garantiza que nadie esté por encima de la normativa.", "Clase Media": "Funciona como el factor equilibrante de la estabilidad social." }
+            },
+            // 7. Estado - Opción Múltiple
+            {
+                id: 7, type: "choice", topic: "Estado", icon: "🧱",
+                q: "¿Cuáles son los cuatro elementos esenciales que estructuran y componen el concepto de Estado?",
+                options: [
+                    "Gobierno, Constitución, Fuerzas Armadas y Empresas Nacionales.",
+                    "Población, Territorio, Gobierno y Soberanía (Poder).",
+                    "Partidos Políticos, Fronteras, Centros Educativos y Moneda Única.",
+                    "Idioma Oficial, Capital Federal, Parlamento y Poder Judicial."
+                ],
+                correct: 1
+            },
+            // 8. Nación - Completar Cuadro
+            {
+                id: 8, type: "grid", topic: "Nación", icon: "🌍",
+                q: "Completá el cuadro sobre la desconexión entre fronteras políticas y culturales:",
+                headers: ["Categoría", "Ejemplos representativos"],
+                rows: [
+                    { label: "Naciones sin territorio", options: ["Seleccionar...", "El Pueblo Gitano (Romaní).", "Ciudades-Estado con soberanías exclusivamente bancarias."], correct: "El Pueblo Gitano (Romaní)." }
+                ]
+            },
+            // 9. Gobierno - Unir Columnas
+            {
+                id: 9, type: "match", topic: "Gobierno", icon: "📐",
+                q: "Uní las agrupaciones sociales en las que Platón estructuraba idealmente su República:",
+                left: ["Gobernantes-Filósofos", "Guardianes-Guerreros"],
+                right: ["Encargados de la defensa y la protección del orden interno.", "Aportan la sabiduría y la dirección racional de la polis."],
+                pairs: { "Gobernantes-Filósofos": "Aportan la sabiduría y la dirección racional de la polis.", "Guardianes-Guerreros": "Encargados de la defensa y la protección del orden interno." }
+            },
+            // 10. Estado - Opción Múltiple
+            {
+                id: 10, type: "choice", topic: "Estado", icon: "⚖️",
+                q: "Al comparar los sistemas de adquisición de la nacionalidad, se concluye correctamente que:",
+                options: [
+                    "El Ius Sanguinis se rige por el lugar de nacimiento y el Ius Soli se hereda por línea familiar consanguínea.",
+                    "El Ius Soli determina la nacionalidad por el lugar de nacimiento y el Ius Sanguinis por la filiación de los padres.",
+                    "Ambos criterios demandan evaluaciones formales de historia patria al cumplir la mayoría de edad.",
+                    "El Ius Soli es de uso restrictivo para diplomáticos y el Ius Sanguinis aplica a residentes sin ciudadanía."
+                ],
+                correct: 1
+            },
+            // 11. Nación - Completar Cuadro
+            {
+                id: 11, type: "grid", topic: "Nación", icon: "🌐",
+                q: "Completá el cuadro sobre las configuraciones geopolíticas multifrontera:",
+                headers: ["Situación Geopolítica", "Casos de Estudio Históricos"],
+                rows: [
+                    { label: "Nación en varios Estados", options: ["Seleccionar...", "El pueblo Kurdo o el pueblo Coreano.", "Empresas multinacionales con representación en asambleas."], correct: "El pueblo Kurdo o el pueblo Coreano." }
+                ]
+            },
+            // 12. Gobierno - Unir Columnas
+            {
+                id: 12, type: "match", topic: "Gobierno", icon: "✨",
+                q: "Uní las características de la República Ideal pensada desde las corrientes de la filosofía platónica:",
+                left: ["Aristocracia del saber", "Productores y Artesanos"],
+                right: ["Estamento encargado de proveer el sustento material base.", "Modelo regido por la razón bajo el comando del Rey-Filósofo."],
+                pairs: { "Aristocracia del saber": "Modelo regido por la razón bajo el comando del Rey-Filósofo.", "Productores y Artesanos": "Estamento encargado de proveer el sustento material base." }
+            },
+            // 13. Estado - Opción Múltiple
+            {
+                id: 13, type: "choice", topic: "Estado", icon: "🗺️",
+                q: "Al contrastar los modelos territoriales Unitario, Federal y Confederado, resalta que:",
+                options: [
+                    "En el Unitario el poder se centraliza; en el Federal hay autonomía provincial coordinada; la Confederación une Estados soberanos por tratados.",
+                    "El esquema Federal prohíbe de forma absoluta dictar normativas locales a las regiones autónomas.",
+                    "La Confederación elimina de forma irreversible las soberanías individuales para constituir una fusión unitaria.",
+                    "En el modelo Unitario las provincias poseen cartas magnas soberanas capaces de declarar guerras externas de forma autónoma."
+                ],
+                correct: 0
+            },
+            // 14. Nación - Completar Cuadro
+            {
+                id: 14, type: "grid", topic: "Nación", icon: "🌱",
+                q: "Completá el cuadro sobre los reconocimientos de preexistencia identitaria:",
+                headers: ["Término Legal/Histórico", "Esencia del Concepto"],
+                rows: [
+                    { label: "Pueblos Originarios", options: ["Seleccionar...", "Comunidades descendientes de culturas precolombinas preexistentes a los Estados modernos.", "Inmigración ultramarina llegada durante la industrialización tardía."], correct: "Comunidades descendientes de culturas precolombinas preexistentes a los Estados modernos." }
+                ]
+            },
+            // 15. Gobierno - Unir Columnas
+            {
+                id: 15, type: "match", topic: "Gobierno", icon: "✍️",
+                q: "Uní los mecanismos de participación según la Constitución Nacional Argentina (CNA):",
+                left: ["Iniciativa Popular", "Artículo 39 CNA"],
+                right: ["Base jurídica que regula la presentación ciudadana de proyectos de ley.", "Derecho del electorado de proponer proyectos normativos ante Diputados."],
+                pairs: { "Iniciativa Popular": "Derecho del electorado de proponer proyectos normativos ante Diputados.", "Artículo 39 CNA": "Base jurídica que regula la presentación ciudadana de proyectos de ley." }
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let backClickTracking = {}; 
+        let studentName = "";
+        let studentCode = "";
+        let isTeacherMode = false;
+
+        // Comprobar bloqueo previo al cargar la página
+        window.onload = function() {
+            if (localStorage.getItem("desafio_completado") === "true") {
+                forceLockout();
+            }
+        };
+
+        // AUDIO SINTETIZADO NATIVO
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(type) {
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.06);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.12); 
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.24); 
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.45);
+                }
+            } catch(e) { console.log("Audio inactivo"); }
+        }
+
+        // VALIDACIÓN DE LOGINS E INDISTINCIÓN MAYÚSCULAS/MINÚSCULAS
+        function startGame() {
+            if (localStorage.getItem("desafio_completado") === "true") {
+                forceLockout();
+                return;
+            }
+
+            const nameInput = document.getElementById("user-name").value.trim();
+            const codeInput = document.getElementById("game-code").value.trim().toUpperCase();
+            const errorDiv = document.getElementById("login-error");
+
+            if (!nameInput || !codeInput) {
+                errorDiv.style.display = "block";
+                errorDiv.innerText = "Por favor, completá tu Nombre, Apellido y Código para continuar.";
+                return;
+            }
+
+            if (codeInput === TEACHER_CODE) {
+                isTeacherMode = true;
+            } else if (STUDENT_CODES.includes(codeInput)) {
+                isTeacherMode = false;
+            } else {
+                errorDiv.style.display = "block";
+                errorDiv.innerText = "El código ingresado no figura en los registros de juego.";
+                return;
+            }
+
+            studentName = nameInput;
+            studentCode = codeInput;
+            errorDiv.style.display = "none";
+            playBeep('click');
+
+            document.getElementById("screen-login").classList.remove("active");
+            document.getElementById("screen-game").classList.add("active");
+            showQuestion();
+        }
+
+        // RENDER DE PANTALLAS
+        function showQuestion() {
+            const qData = quizData[currentQuestionIndex];
+            const container = document.getElementById("question-container");
+            container.innerHTML = "";
+
+            const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+            document.getElementById("progress-fill").style.width = `${progressPercent}%`;
+
+            document.getElementById("btn-back").style.visibility = currentQuestionIndex === 0 ? "hidden" : "visible";
+            document.getElementById("btn-next").innerText = currentQuestionIndex === quizData.length - 1 ? "Finalizar 🏁" : "Avanzar ➡️";
+
+            const header = document.createElement("div");
+            header.innerHTML = `<div class="icon-header">${qData.icon}</div>
+                                <span style="font-size:12px; text-transform:uppercase; font-weight:bold; color:var(--primary)">Tema: ${qData.topic} (${currentQuestionIndex+1}/15)</span>
+                                <h3 style="margin-top:8px; line-height: 1.4;">${qData.q}</h3>`;
+            container.appendChild(header);
+
+            if (qData.type === "choice") {
+                renderChoice(qData, container);
+            } else if (qData.type === "grid") {
+                renderGrid(qData, container);
+            } else if (qData.type === "match") {
+                renderMatch(qData, container);
+            }
+        }
+
+        function renderChoice(qData, container) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "options-grid";
+            qData.options.forEach((opt, idx) => {
+                const card = document.createElement("div");
+                card.className = "option-card";
+                if (userAnswers[qData.id] === idx) card.classList.add("selected");
+                card.innerText = opt;
+                card.onclick = () => {
+                    playBeep('click');
+                    document.querySelectorAll(".option-card").forEach(c => c.classList.remove("selected"));
+                    card.classList.add("selected");
+                    userAnswers[qData.id] = idx;
+                };
+                wrapper.appendChild(card);
+            });
+            container.appendChild(wrapper);
+        }
+
+        function renderGrid(qData, container) {
+            const table = document.createElement("table");
+            table.className = "grid-table";
+            table.innerHTML = `<tr><th>${qData.headers[0]}</th><th>${qData.headers[1]}</th></tr>`;
+
+            qData.rows.forEach(row => {
+                const tr = document.createElement("tr");
+                const tdLabel = document.createElement("td");
+                tdLabel.innerText = row.label;
+                tdLabel.style.fontWeight = "600";
+
+                const tdSelect = document.createElement("td");
+                const select = document.createElement("select");
+                row.options.forEach(opt => {
+                    const o = document.createElement("option");
+                    o.value = opt; o.innerText = opt;
+                    if (userAnswers[qData.id] === opt) o.selected = true;
+                    select.appendChild(o);
+                });
+
+                select.onchange = () => {
+                    playBeep('click');
+                    userAnswers[qData.id] = select.value;
+                };
+                tdSelect.appendChild(select);
+                tr.appendChild(tdLabel); tr.appendChild(tdSelect);
+                table.appendChild(tr);
+            });
+            container.appendChild(table);
+        }
+
+        let selectedLeft = null;
+        function renderMatch(qData, container) {
+            selectedLeft = null;
+            const matchWrapper = document.createElement("div");
+            matchWrapper.className = "matching-container";
+
+            const colLeft = document.createElement("div");
+            colLeft.className = "matching-column";
+            const colRight = document.createElement("div");
+            colRight.className = "matching-column";
+
+            if (!userAnswers[qData.id]) userAnswers[qData.id] = {};
+
+            qData.left.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "match-item"; div.innerText = item;
+                if (userAnswers[qData.id][item]) div.classList.add("linked");
+                div.onclick = () => {
+                    if (div.classList.contains("linked")) return;
+                    playBeep('click');
+                    document.querySelectorAll(".matching-column:first-child .match-item").forEach(i => i.classList.remove("selected"));
+                    div.classList.add("selected");
+                    selectedLeft = item;
+                };
+                colLeft.appendChild(div);
+            });
+
+            qData.right.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "match-item"; div.innerText = item;
+                Object.values(userAnswers[qData.id]).forEach(val => {
+                    if (val === item) div.classList.add("linked");
+                });
+                div.onclick = () => {
+                    if (div.classList.contains("linked") || !selectedLeft) return;
+                    playBeep('click');
+                    userAnswers[qData.id][selectedLeft] = item;
+                    document.querySelector(`.matching-column:first-child .match-item.selected`).classList.add("linked");
+                    div.classList.add("linked");
+                    selectedLeft = null;
+                    document.querySelectorAll(".match-item").forEach(i => i.classList.remove("selected"));
+                };
+                colRight.appendChild(div);
+            });
+
+            matchWrapper.appendChild(colLeft); matchWrapper.appendChild(colRight);
+            
+            const resetBtn = document.createElement("button");
+            resetBtn.className = "btn btn-secondary";
+            resetBtn.style.cssText = "margin-top:15px; font-size:12px; padding:8px 16px;";
+            resetBtn.innerText = "♻️ Reestablecer uniones";
+            resetBtn.onclick = () => {
+                playBeep('click');
+                userAnswers[qData.id] = {};
+                renderMatch(qData, container);
+            };
+
+            container.appendChild(matchWrapper);
+            container.appendChild(resetBtn);
+        }
+
+        // CONTROL DE RETROCESO (MÁXIMO 1 VEZ)
+        function navigateQuestion(step) {
+            const currentQ = quizData[currentQuestionIndex];
+
+            if (step === -1) {
+                if (!backClickTracking[currentQ.id]) backClickTracking[currentQ.id] = 0;
+
+                if (backClickTracking[currentQ.id] >= 1) {
+                    alert("Aviso: Solo se permite reevaluar y corregir la respuesta de una pantalla una única vez.");
+                    return;
+                }
+
+                backClickTracking[currentQ.id] += 1;
+                playBeep('click');
+                currentQuestionIndex += step;
+                showQuestion();
+            } else {
+                playBeep('click');
+                if (currentQuestionIndex === quizData.length - 1) {
+                    processFinalResults();
+                } else {
+                    currentQuestionIndex += step;
+                    showQuestion();
+                }
+            }
+        }
+
+        // PROCESADO DE NOTA Y ENVÍO SILENCIOSO
+        function processFinalResults() {
+            let correctCount = 0;
+
+            quizData.forEach(q => {
+                const ans = userAnswers[q.id];
+                if (q.type === "choice") {
+                    if (ans === q.correct) correctCount++;
+                } else if (q.type === "grid") {
+                    if (ans === q.rows[0].correct) correctCount++;
+                } else if (q.type === "match") {
+                    let allCorrect = true;
+                    if (!ans || Object.keys(ans).length === 0) {
+                        allCorrect = false;
+                    } else {
+                        Object.keys(q.pairs).forEach(key => {
+                            if (ans[key] !== q.pairs[key]) allCorrect = false;
+                        });
+                    }
+                    if (allCorrect) correctCount++;
+                }
+            });
+
+            let finalGrade = ((correctCount / quizData.length) * 10).toFixed(2);
+
+            // Marcador de bloqueo solo si NO es el profesor testeando
+            if (!isTeacherMode) {
+                localStorage.setItem("desafio_completado", "true");
+            }
+
+            const payload = {
+                estudiante: studentName,
+                codigoUsado: studentCode,
+                tipoAcceso: isTeacherMode ? "DOCENTE (Prueba)" : "ALUMNO",
+                respuestasCorrectasTotales: `${correctCount} de 15`,
+                notaCalculada: finalGrade,
+                respuestasDetalladas: JSON.stringify(userAnswers)
+            };
+
+            fetch(FORMSPREE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => showEndScreen())
+            .catch(() => showEndScreen()); // Pasa de pantalla igual ante errores de red
+        }
+
+        function showEndScreen() {
+            playBeep('success');
+            document.getElementById("screen-game").classList.remove("active");
+            document.getElementById("screen-end").classList.add("active");
+        }
+
+        function forceLockout() {
+            document.body.innerHTML = `
+                <div class="container" style="text-align:center; margin-top:50px;">
+                    <div class="icon-header">🚫</div>
+                    <h2>Acceso No Permitido</h2>
+                    <p style="color: var(--text-muted);">Ya has completado tu participación en este juego previamente. No está permitido reiniciar la sesión.</p>
+                </div>`;
+        }
+
+        function exitGame() {
+            window.close();
+            document.body.innerHTML = `
+                <div style="text-align:center; margin-top:100px; color:var(--text-muted);">
+                    <h2>Sesión Finalizada</h2>
+                    <p>Ya podés cerrar esta pestaña con seguridad.</p>
+                </div>`;
+        }
+    </script>
+</body>
+</html>
